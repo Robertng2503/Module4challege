@@ -1,36 +1,4 @@
-var quizBank = [{
-    prompt: "What will I ask",
-    choices: [{
-        value: "Answer choice 1",
-        correct: true
-    }, {
-        value: "Answer choice 2",
-        correct: false
-    }, {
-        value: "Answer choice 3",
-        correct: false
-    }, {
-        value: "Answer choice 4",
-        correct: false
-    }]
-},
-{
-    prompt: "What wi4523452345k",
-    choices: [{
-        value: "Answer choice 12343",
-        correct: true
-    }, {
-        value: "Answer choice 3432",
-        correct: false
-    }, {
-        value: "Answer choice 343",
-        correct: false
-    }, {
-        value: "Answer choice 344334",
-        correct: false
-    }]
-}]
-var currentIndex;
+
 // 1. We need a start button that responds to a click 
 // 2. After I click it, two things happen, timer starts, and we show a question
 // 3. show question, and we need a way to make the answers clickable, and when they click them we want to do what, checkAnswer()
@@ -48,46 +16,120 @@ var currentIndex;
 // -WHen they submit the form, save the initials and the score to localStorage
 // -Render the score in the HighScores Page
 
-//FUnction to show the question
-function showQuestion() {
-    console.log("Should show question")
-    //create an element in my html where I can put my question
-    var currentQuestion = quizBank[currentIndex]
-    console.log(currentQuestion)
-    var prompt = currentQuestion.prompt
 
-    var choices = currentQuestion.choices
-    //create an element in my html where I can put my answer choices
-    //for loop for my choices array and create a button, tell the button what I want the text content to be,
-    //add a lister to the button, so that when it is pressed, it will checkAnswer
+const startButton = document.getElementById('start-btn')
+const nextButton = document.getElementById('next-btn')
+const questionContainerElement = document.getElementById('question-container')
+const questionElement = document.getElementById('question')
+const answerButtonsElement = document.getElementById('answer-buttons')
 
+let shuffledQuestions, currentQuestionIndex
+
+startButton.addEventListener('click', startGame)
+nextButton.addEventListener('click', () => {
+  currentQuestionIndex++
+  setNextQuestion()
+})
+
+function startGame() {
+  startButton.classList.add('hide')
+  shuffledQuestions = questions.sort(() => Math.random() - .5)
+  currentQuestionIndex = 0
+  questionContainerElement.classList.remove('hide')
+  setNextQuestion()
 }
 
-//Function to check the answer
-function checkAnswer(event){
-    console.log(event)
-    console.log(event.target)
-    // check the innerHTML, innerTExt, if it has a class, attribute, or anything you want to do to make sure that it is the ocrrect answer
-    // what question I'm att, to know if I can move to the next question
-    currentIndex +=1
-    showQuestion()
+function setNextQuestion() {
+  resetState()
+  showQuestion(shuffledQuestions[currentQuestionIndex])
 }
 
-// Function to start the timer is necessary
-// 
-function startTimer() {
-    //take care of the timer logic
-    console.log("starting the timer")
+function showQuestion(question) {
+  questionElement.innerText = question.question
+  question.answers.forEach(answer => {
+    const button = document.createElement('button')
+    button.innerText = answer.text
+    button.classList.add('btn')
+    if (answer.correct) {
+      button.dataset.correct = answer.correct
+    }
+    button.addEventListener('click', selectAnswer)
+    answerButtonsElement.appendChild(button)
+  })
 }
 
-
-function startQuiz() {
-    console.log("starting the quiz")
-    currentIndex = 0
-    startTimer()
-    showQuestion()
+function resetState() {
+  clearStatusClass(document.body)
+  nextButton.classList.add('hide')
+  while (answerButtonsElement.firstChild) {
+    answerButtonsElement.removeChild(answerButtonsElement.firstChild)
+  }
 }
 
-var startButton = document.getElementById("start")
-console.log(startButton)
-startButton.addEventListener("click", startQuiz)
+function selectAnswer(e) {
+  const selectedButton = e.target
+  const correct = selectedButton.dataset.correct
+  setStatusClass(document.body, correct)
+  Array.from(answerButtonsElement.children).forEach(button => {
+    setStatusClass(button, button.dataset.correct)
+  })
+  if (shuffledQuestions.length > currentQuestionIndex + 1) {
+    nextButton.classList.remove('hide')
+  } else {
+    startButton.innerText = 'Restart'
+    startButton.classList.remove('hide')
+  }
+}
+
+function setStatusClass(element, correct) {
+  clearStatusClass(element)
+  if (correct) {
+    element.classList.add('correct')
+  } else {
+    element.classList.add('wrong')
+  }
+}
+
+function clearStatusClass(element) {
+  element.classList.remove('correct')
+  element.classList.remove('wrong')
+}
+
+const questions = [
+  {
+    question: 'How many leg does Dog have?',
+    answers: [
+      { text: '4', correct: true },
+      { text: '1', correct: false },
+      { text: '2', correct: false },
+      { text: '8', correct: false }
+    ]
+  },
+  {
+    question: 'What is your favorite food?',
+    answers: [
+      { text: 'Fried Chicken', correct: true },
+      { text: 'Rice', correct: true },
+      { text: 'Pizza', correct: true },
+      { text: 'Pho', correct: true }
+    ]
+  },
+  {
+    question: 'What is your favorite brand of car?',
+    answers: [
+      { text: 'BMW', correct: false },
+      { text: 'TOyota', correct: true },
+      { text: 'Nissan', correct: false },
+      { text: 'ford', correct: false }
+    ]
+  },
+  {
+    question: 'What is 4 * 2?',
+    answers: [
+      { text: '16', correct: false },
+      { text: '9', correct: false },
+      { text: '6', correct: false },
+      { text: '8', correct: true }
+    ]
+  }
+]
